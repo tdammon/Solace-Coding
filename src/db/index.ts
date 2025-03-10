@@ -11,8 +11,14 @@ const setup = () => {
     };
   }
 
-  // for query purposes
-  const queryClient = postgres(process.env.DATABASE_URL);
+  const queryClient = postgres(process.env.DATABASE_URL, {
+    max: 10,
+    idle_timeout: 20,
+    connect_timeout: 10,
+    prepare: false,
+    ssl: process.env.NODE_ENV === "production",
+  });
+
   const db = drizzle(queryClient);
   return db;
 };

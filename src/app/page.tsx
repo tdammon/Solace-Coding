@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import styles from "./page.module.css";
+import { debounce } from "lodash";
 
 type Advocate = {
   firstName: string;
@@ -17,41 +18,61 @@ type Advocate = {
 export default function Home() {
   const [advocates, setAdvocates] = useState<Advocate[]>([]);
   const [filteredAdvocates, setFilteredAdvocates] = useState<Advocate[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("fetching advocates...");
-    fetch("/api/advocates").then((response) => {
-      response.json().then((jsonResponse) => {
-        setAdvocates(jsonResponse.data);
-        setFilteredAdvocates(jsonResponse.data);
-      });
-    });
+    const fetchAdvocates = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch("/api/advocates");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const { data } = await response.json();
+        setAdvocates(data);
+        setFilteredAdvocates(data);
+      } catch (error) {
+        setError("Failed to fetch advocates");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAdvocates();
   }, []);
+
+  const debouncedSearch = useCallback(
+    debounce((searchTerm: string) => {
+      const filtered = advocates.filter((advocate) => {
+        return (
+          advocate.firstName.toLowerCase().includes(searchTerm) ||
+          advocate.lastName.toLowerCase().includes(searchTerm) ||
+          advocate.city.toLowerCase().includes(searchTerm) ||
+          advocate.degree.toLowerCase().includes(searchTerm) ||
+          advocate.specialties.some((s) =>
+            s.toLowerCase().includes(searchTerm)
+          ) ||
+          String(advocate.yearsOfExperience).includes(searchTerm)
+        );
+      });
+      setFilteredAdvocates(filtered);
+    }, 300),
+    [advocates]
+  );
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchTerm = e.target.value.toLowerCase();
-
-    document.getElementById("search-term").innerHTML = searchTerm;
-
-    console.log("filtering advocates...");
-    const filteredAdvocates = advocates.filter((advocate) => {
-      return (
-        advocate.firstName.toLowerCase().includes(searchTerm) ||
-        advocate.lastName.toLowerCase().includes(searchTerm) ||
-        advocate.city.toLowerCase().includes(searchTerm) ||
-        advocate.degree.toLowerCase().includes(searchTerm) ||
-        advocate.specialties.some((s) =>
-          s.toLowerCase().includes(searchTerm)
-        ) ||
-        String(advocate.yearsOfExperience).includes(searchTerm)
-      );
-    });
-
-    setFilteredAdvocates(filteredAdvocates);
+    debouncedSearch(searchTerm);
   };
 
   const onClick = () => {
     setFilteredAdvocates(advocates);
+    const searchDisplay = document.getElementById("search-term");
+    if (searchDisplay) {
+      searchDisplay.innerHTML = "";
+    }
   };
 
   // Define columns
@@ -115,6 +136,27 @@ export default function Home() {
     ...advocate,
   }));
 
+  if (error) {
+    return (
+      <main>
+        <header className={styles.header}>
+          <h1 className={styles.headerTitle}>Solace Advocates</h1>
+        </header>
+        <div className={styles.container}>
+          <div className={styles.errorContainer}>
+            <p className={styles.errorMessage}>Error: {error}</p>
+            <button
+              className={styles.resetButton}
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main>
       <header className={styles.header}>
@@ -129,8 +171,14 @@ export default function Home() {
               className={styles.searchInput}
               placeholder="Search by name, city, or specialty..."
               onChange={onChange}
+              disabled={isLoading}
+              aria-label="Search advocates"
             />
-            <button className={styles.resetButton} onClick={onClick}>
+            <button
+              className={styles.resetButton}
+              onClick={onClick}
+              disabled={isLoading}
+            >
               Reset Search
             </button>
           </div>
@@ -140,43 +188,50 @@ export default function Home() {
         </div>
 
         <div className={styles.gridContainer}>
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            getRowHeight={() => "auto"}
-            initialState={{
-              pagination: {
-                paginationModel: { page: 0, pageSize: 15 },
-              },
-            }}
-            pageSizeOptions={[10, 15, 20]}
-            checkboxSelection={false}
-            disableRowSelectionOnClick
-            sx={{
-              border: 2,
-              borderColor: "#265b4e",
-              color: "black",
-              "& .MuiDataGrid-cell": {
-                padding: "8px",
-              },
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: "#f4f8f7",
-                "& .MuiDataGrid-columnHeaderTitle": {
-                  color: "#285e50",
-                  fontWeight: "bold",
+          {isLoading ? (
+            <div className={styles.loadingContainer}>
+              <div className={styles.spinner} />
+              <div className={styles.loadingText}>Loading advocates...</div>
+            </div>
+          ) : (
+            <DataGrid
+              rows={rows}
+              columns={columns}
+              getRowHeight={() => "auto"}
+              initialState={{
+                pagination: {
+                  paginationModel: { page: 0, pageSize: 15 },
                 },
-              },
-              "& .MuiDataGrid-row:nth-of-type(even)": {
-                backgroundColor: "#f4f8f7",
-              },
-              "& .MuiDataGrid-row:hover": {
-                backgroundColor: "#d7a13b20",
-              },
-              "& .MuiDataGrid-footerContainer": {
-                borderTop: "2px solid #265b4e",
-              },
-            }}
-          />
+              }}
+              pageSizeOptions={[10, 15, 20]}
+              checkboxSelection={false}
+              disableRowSelectionOnClick
+              sx={{
+                border: 1,
+                borderColor: "#265b4e",
+                color: "black",
+                "& .MuiDataGrid-cell": {
+                  padding: "8px",
+                },
+                "& .MuiDataGrid-columnHeaders": {
+                  backgroundColor: "#f4f8f7",
+                  "& .MuiDataGrid-columnHeaderTitle": {
+                    color: "#285e50",
+                    fontWeight: "bold",
+                  },
+                },
+                "& .MuiDataGrid-row:nth-of-type(even)": {
+                  backgroundColor: "#f4f8f7",
+                },
+                "& .MuiDataGrid-row:hover": {
+                  backgroundColor: "#d7a13b20",
+                },
+                "& .MuiDataGrid-footerContainer": {
+                  borderTop: "1px solid #265b4e",
+                },
+              }}
+            />
+          )}
         </div>
       </div>
     </main>
