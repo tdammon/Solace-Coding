@@ -66,7 +66,7 @@ export default function Home() {
     },
     { field: "lastName", headerName: "Last Name", width: 130 },
     { field: "city", headerName: "City", width: 130 },
-    { field: "degree", headerName: "Degree", width: 130 },
+    { field: "degree", headerName: "Degree", width: 80 },
     {
       field: "specialties",
       headerName: "Specialties",
