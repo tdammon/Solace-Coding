@@ -155,18 +155,19 @@ export default function Home() {
             sx={{
               border: 2,
               borderColor: "#265b4e",
+              color: "black",
               "& .MuiDataGrid-cell": {
                 padding: "8px",
               },
               "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: "#265b4e",
+                backgroundColor: "#f4f8f7",
                 "& .MuiDataGrid-columnHeaderTitle": {
-                  color: "black",
+                  color: "#285e50",
                   fontWeight: "bold",
                 },
               },
               "& .MuiDataGrid-row:nth-of-type(even)": {
-                backgroundColor: "#f5f5f5",
+                backgroundColor: "#f4f8f7",
               },
               "& .MuiDataGrid-row:hover": {
                 backgroundColor: "#d7a13b20",
