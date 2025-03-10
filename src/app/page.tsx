@@ -1,10 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+
+type Advocate = {
+  firstName: string;
+  lastName: string;
+  city: string;
+  degree: string;
+  specialties: string[];
+  yearsOfExperience: string;
+  phoneNumber: string;
+};
 
 export default function Home() {
-  const [advocates, setAdvocates] = useState([]);
-  const [filteredAdvocates, setFilteredAdvocates] = useState([]);
+  const [advocates, setAdvocates] = useState<Advocate[]>([]);
+  const [filteredAdvocates, setFilteredAdvocates] = useState<Advocate[]>([]);
 
   useEffect(() => {
     console.log("fetching advocates...");
@@ -16,7 +27,7 @@ export default function Home() {
     });
   }, []);
 
-  const onChange = (e) => {
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchTerm = e.target.value;
 
     document.getElementById("search-term").innerHTML = searchTerm;
@@ -41,6 +52,67 @@ export default function Home() {
     setFilteredAdvocates(advocates);
   };
 
+  // Define columns
+  const columns: GridColDef[] = [
+    {
+      field: "firstName",
+      headerName: "First Name",
+      width: 130,
+      renderCell: (params) => (
+        <div style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+          {params.value}
+        </div>
+      ),
+    },
+    { field: "lastName", headerName: "Last Name", width: 130 },
+    { field: "city", headerName: "City", width: 130 },
+    { field: "degree", headerName: "Degree", width: 80 },
+    {
+      field: "specialties",
+      headerName: "Specialties",
+      flex: 1,
+      renderCell: (params: GridRenderCellParams) => (
+        <div
+          style={{
+            whiteSpace: "normal",
+            lineHeight: "20px",
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          {(params.value as string[]).join(", ")}
+        </div>
+      ),
+    },
+    {
+      field: "yearsOfExperience",
+      headerName: "Years of Experience",
+      width: 130,
+    },
+    {
+      field: "phoneNumber",
+      headerName: "Phone Number",
+      width: 120,
+      renderCell: (params: GridRenderCellParams) => {
+        const number = String(params.value || "");
+        if (number.length !== 10) return <div>{number}</div>;
+
+        return (
+          <div>
+            {`(${number.slice(0, 3)}) ${number.slice(3, 6)}-${number.slice(6)}`}
+          </div>
+        );
+      },
+    },
+  ];
+
+  // Prepare rows with unique ids
+  const rows = filteredAdvocates.map((advocate, index) => ({
+    id: index,
+    ...advocate,
+  }));
+
   return (
     <main style={{ margin: "24px" }}>
       <h1>Solace Advocates</h1>
@@ -56,36 +128,44 @@ export default function Home() {
       </div>
       <br />
       <br />
-      <table>
-        <thead>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>City</th>
-          <th>Degree</th>
-          <th>Specialties</th>
-          <th>Years of Experience</th>
-          <th>Phone Number</th>
-        </thead>
-        <tbody>
-          {filteredAdvocates.map((advocate) => {
-            return (
-              <tr>
-                <td>{advocate.firstName}</td>
-                <td>{advocate.lastName}</td>
-                <td>{advocate.city}</td>
-                <td>{advocate.degree}</td>
-                <td>
-                  {advocate.specialties.map((s) => (
-                    <div>{s}</div>
-                  ))}
-                </td>
-                <td>{advocate.yearsOfExperience}</td>
-                <td>{advocate.phoneNumber}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div style={{ height: 700, width: "100%" }}>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          getRowHeight={() => "auto"}
+          initialState={{
+            pagination: {
+              paginationModel: { page: 0, pageSize: 15 },
+            },
+          }}
+          pageSizeOptions={[10, 15, 20]}
+          checkboxSelection={false}
+          disableRowSelectionOnClick
+          sx={{
+            border: 2,
+            borderColor: "#265b4e",
+            "& .MuiDataGrid-cell": {
+              padding: "8px",
+            },
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: "#265b4e",
+              "& .MuiDataGrid-columnHeaderTitle": {
+                color: "black",
+                fontWeight: "bold",
+              },
+            },
+            "& .MuiDataGrid-row:nth-of-type(even)": {
+              backgroundColor: "#f5f5f5",
+            },
+            "& .MuiDataGrid-row:hover": {
+              backgroundColor: "#d7a13b20",
+            },
+            "& .MuiDataGrid-footerContainer": {
+              borderTop: "2px solid #265b4e",
+            },
+          }}
+        />
+      </div>
     </main>
   );
 }
