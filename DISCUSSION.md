@@ -1,0 +1,1 @@
+Just a quick note on the Types I am using. I have phone number and years of experience as strings on the frontend. Our schema implies that they are numbers. I would recommend update our db to make these fields strings as integers and floats are generally only used for calculations.
