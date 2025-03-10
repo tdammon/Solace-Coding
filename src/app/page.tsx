@@ -20,6 +20,7 @@ export default function Home() {
   const [filteredAdvocates, setFilteredAdvocates] = useState<Advocate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState("");
 
   useEffect(() => {
     const fetchAdvocates = async () => {
@@ -64,11 +65,13 @@ export default function Home() {
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchTerm = e.target.value.toLowerCase();
+    setSearchInput(e.target.value);
     debouncedSearch(searchTerm);
   };
 
   const onClick = () => {
     setFilteredAdvocates(advocates);
+    setSearchInput("");
     const searchDisplay = document.getElementById("search-term");
     if (searchDisplay) {
       searchDisplay.innerHTML = "";
@@ -171,6 +174,7 @@ export default function Home() {
               className={styles.searchInput}
               placeholder="Search by name, city, or specialty..."
               onChange={onChange}
+              value={searchInput}
               disabled={isLoading}
               aria-label="Search advocates"
             />
