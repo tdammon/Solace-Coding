@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: "Mollie Glaston";
+  src: url("/fonts/Mollie\ Glaston.otf") format("opentype"),
+    url("/fonts/Mollie\ Glaston.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}

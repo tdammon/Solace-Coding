@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import styles from "./page.module.css";
 
 type Advocate = {
   firstName: string;
@@ -28,19 +29,21 @@ export default function Home() {
   }, []);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const searchTerm = e.target.value;
+    const searchTerm = e.target.value.toLowerCase();
 
     document.getElementById("search-term").innerHTML = searchTerm;
 
     console.log("filtering advocates...");
     const filteredAdvocates = advocates.filter((advocate) => {
       return (
-        advocate.firstName.includes(searchTerm) ||
-        advocate.lastName.includes(searchTerm) ||
-        advocate.city.includes(searchTerm) ||
-        advocate.degree.includes(searchTerm) ||
-        advocate.specialties.includes(searchTerm) ||
-        advocate.yearsOfExperience.includes(searchTerm)
+        advocate.firstName.toLowerCase().includes(searchTerm) ||
+        advocate.lastName.toLowerCase().includes(searchTerm) ||
+        advocate.city.toLowerCase().includes(searchTerm) ||
+        advocate.degree.toLowerCase().includes(searchTerm) ||
+        advocate.specialties.some((s) =>
+          s.toLowerCase().includes(searchTerm)
+        ) ||
+        String(advocate.yearsOfExperience).includes(searchTerm)
       );
     });
 
@@ -48,7 +51,6 @@ export default function Home() {
   };
 
   const onClick = () => {
-    console.log(advocates);
     setFilteredAdvocates(advocates);
   };
 
@@ -114,57 +116,68 @@ export default function Home() {
   }));
 
   return (
-    <main style={{ margin: "24px" }}>
-      <h1>Solace Advocates</h1>
-      <br />
-      <br />
-      <div>
-        <p>Search</p>
-        <p>
-          Searching for: <span id="search-term"></span>
-        </p>
-        <input style={{ border: "1px solid black" }} onChange={onChange} />
-        <button onClick={onClick}>Reset Search</button>
-      </div>
-      <br />
-      <br />
-      <div style={{ height: 700, width: "100%" }}>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          getRowHeight={() => "auto"}
-          initialState={{
-            pagination: {
-              paginationModel: { page: 0, pageSize: 15 },
-            },
-          }}
-          pageSizeOptions={[10, 15, 20]}
-          checkboxSelection={false}
-          disableRowSelectionOnClick
-          sx={{
-            border: 2,
-            borderColor: "#265b4e",
-            "& .MuiDataGrid-cell": {
-              padding: "8px",
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "#265b4e",
-              "& .MuiDataGrid-columnHeaderTitle": {
-                color: "black",
-                fontWeight: "bold",
+    <main>
+      <header className={styles.header}>
+        <h1 className={styles.headerTitle}>Solace Advocates</h1>
+      </header>
+
+      <div className={styles.container}>
+        <div className={styles.searchContainer}>
+          <h2 className={styles.searchTitle}>Search Advocates</h2>
+          <div className={styles.searchInputContainer}>
+            <input
+              className={styles.searchInput}
+              placeholder="Search by name, city, or specialty..."
+              onChange={onChange}
+            />
+            <button className={styles.resetButton} onClick={onClick}>
+              Reset Search
+            </button>
+          </div>
+          <p className={styles.searchTerm}>
+            Searching for: <span id="search-term"></span>
+          </p>
+        </div>
+
+        <div className={styles.gridContainer}>
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            getRowHeight={() => "auto"}
+            initialState={{
+              pagination: {
+                paginationModel: { page: 0, pageSize: 15 },
               },
-            },
-            "& .MuiDataGrid-row:nth-of-type(even)": {
-              backgroundColor: "#f5f5f5",
-            },
-            "& .MuiDataGrid-row:hover": {
-              backgroundColor: "#d7a13b20",
-            },
-            "& .MuiDataGrid-footerContainer": {
-              borderTop: "2px solid #265b4e",
-            },
-          }}
-        />
+            }}
+            pageSizeOptions={[10, 15, 20]}
+            checkboxSelection={false}
+            disableRowSelectionOnClick
+            sx={{
+              border: 2,
+              borderColor: "#265b4e",
+              color: "black",
+              "& .MuiDataGrid-cell": {
+                padding: "8px",
+              },
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "#f4f8f7",
+                "& .MuiDataGrid-columnHeaderTitle": {
+                  color: "#285e50",
+                  fontWeight: "bold",
+                },
+              },
+              "& .MuiDataGrid-row:nth-of-type(even)": {
+                backgroundColor: "#f4f8f7",
+              },
+              "& .MuiDataGrid-row:hover": {
+                backgroundColor: "#d7a13b20",
+              },
+              "& .MuiDataGrid-footerContainer": {
+                borderTop: "2px solid #265b4e",
+              },
+            }}
+          />
+        </div>
       </div>
     </main>
   );
