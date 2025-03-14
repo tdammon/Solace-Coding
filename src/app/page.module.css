@@ -10,7 +10,7 @@
   color: white;
   margin: 0;
   font-size: 32px;
-  font-family: "Mollie Glaston", sans-serif;
+  font-family: var(--font-mollie-glaston);
 }
 
 .container {
