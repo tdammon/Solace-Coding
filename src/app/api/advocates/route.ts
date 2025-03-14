@@ -20,7 +20,6 @@ const WINDOW_MS = 60 * 1000;
 const ipRequests = new Map<string, number>();
 
 function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
   const requests = ipRequests.get(ip) || 0;
   ipRequests.set(ip, requests + 1);
 
