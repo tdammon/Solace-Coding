@@ -53,11 +53,15 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
-.resetButton:hover {
+.resetButton:hover:not(:disabled) {
   background-color: #1a4237;
+}
+
+.resetButton:active:not(:disabled) {
+  background-color: #133129;
 }
 
 .resetButton:disabled {
@@ -105,9 +109,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  color: #265b4e;
-  font-size: 18px;
+  min-height: 400px;
+  background-color: #f9fafb;
+  border-radius: 8px;
 }
 
 .loadingText {
@@ -130,5 +134,11 @@
 .searchInput:disabled {
   background-color: #f5f5f5;
   cursor: not-allowed;
-  opacity: 0.7;
+}
+
+.searchInput:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #265b4e33;
+  border-color: #265b4e;
+  transition: all 0.2s ease;
 }
