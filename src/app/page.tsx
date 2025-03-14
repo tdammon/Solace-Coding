@@ -60,7 +60,7 @@ export default function Home() {
       });
       setFilteredAdvocates(filtered);
     }, 300),
-    [advocates]
+    [advocates, setFilteredAdvocates]
   );
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -252,7 +252,7 @@ export default function Home() {
               />
               {!isLoading && filteredAdvocates.length === 0 && (
                 <div className={styles.emptyState}>
-                  <p>No advocates found matching "{searchInput}"</p>
+                  <p>No advocates found matching &quot;{searchInput}&quot;</p>
                   <button
                     className={styles.resetButton}
                     onClick={onClick}
