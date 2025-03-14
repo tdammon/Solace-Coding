@@ -1,10 +1,12 @@
-import { advocateData } from "../../../db/seed/advocates";
 import { unstable_cache } from "next/cache";
 import { headers } from "next/headers";
+import db from "../../../db";
+import { advocates } from "../../../db/schema";
 
 const getAdvocates = unstable_cache(
   async () => {
-    return advocateData;
+    const advocatesList = await db.select().from(advocates);
+    return advocatesList;
   },
   ["advocates"],
   {

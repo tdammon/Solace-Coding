@@ -78,7 +78,6 @@ export default function Home() {
     }
   };
 
-  // Define columns
   const columns: GridColDef[] = [
     {
       field: "firstName",
@@ -133,7 +132,6 @@ export default function Home() {
     },
   ];
 
-  // Prepare rows with unique ids
   const rows = filteredAdvocates.map((advocate, index) => ({
     id: index,
     ...advocate,
