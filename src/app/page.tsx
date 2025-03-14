@@ -20,6 +20,7 @@ export default function Home() {
   const [filteredAdvocates, setFilteredAdvocates] = useState<Advocate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState("");
 
   useEffect(() => {
     const fetchAdvocates = async () => {
@@ -64,11 +65,13 @@ export default function Home() {
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchTerm = e.target.value.toLowerCase();
+    setSearchInput(e.target.value);
     debouncedSearch(searchTerm);
   };
 
   const onClick = () => {
     setFilteredAdvocates(advocates);
+    setSearchInput("");
     const searchDisplay = document.getElementById("search-term");
     if (searchDisplay) {
       searchDisplay.innerHTML = "";
@@ -164,73 +167,102 @@ export default function Home() {
       </header>
 
       <div className={styles.container}>
-        <div className={styles.searchContainer}>
-          <h2 className={styles.searchTitle}>Search Advocates</h2>
+        <div className={styles.searchContainer} role="search">
+          <h2 className={styles.searchTitle} id="search-title">
+            Search Advocates
+          </h2>
           <div className={styles.searchInputContainer}>
             <input
               className={styles.searchInput}
               placeholder="Search by name, city, or specialty..."
               onChange={onChange}
+              value={searchInput}
               disabled={isLoading}
               aria-label="Search advocates"
+              aria-describedby="search-title search-description"
+              aria-busy={isLoading}
             />
             <button
               className={styles.resetButton}
               onClick={onClick}
               disabled={isLoading}
+              aria-label="Reset search"
             >
               Reset Search
             </button>
           </div>
-          <p className={styles.searchTerm}>
-            Searching for: <span id="search-term"></span>
+          <p id="search-description" className={styles.searchTerm}>
+            {searchInput ? (
+              <>
+                Showing results for:{" "}
+                <span className={styles.searchHighlight}>{searchInput}</span>
+              </>
+            ) : (
+              <span className={styles.searchPlaceholder}>
+                Search by advocate name, city, or specialty
+              </span>
+            )}
           </p>
         </div>
 
         <div className={styles.gridContainer}>
           {isLoading ? (
-            <div className={styles.loadingContainer}>
-              <div className={styles.spinner} />
+            <div className={styles.loadingContainer} role="status">
+              <div className={styles.spinner} aria-hidden="true" />
               <div className={styles.loadingText}>Loading advocates...</div>
             </div>
           ) : (
-            <DataGrid
-              rows={rows}
-              columns={columns}
-              getRowHeight={() => "auto"}
-              initialState={{
-                pagination: {
-                  paginationModel: { page: 0, pageSize: 15 },
-                },
-              }}
-              pageSizeOptions={[10, 15, 20]}
-              checkboxSelection={false}
-              disableRowSelectionOnClick
-              sx={{
-                border: 1,
-                borderColor: "#265b4e",
-                color: "black",
-                "& .MuiDataGrid-cell": {
-                  padding: "8px",
-                },
-                "& .MuiDataGrid-columnHeaders": {
-                  backgroundColor: "#f4f8f7",
-                  "& .MuiDataGrid-columnHeaderTitle": {
-                    color: "#285e50",
-                    fontWeight: "bold",
+            <>
+              <DataGrid
+                rows={rows}
+                columns={columns}
+                getRowHeight={() => "auto"}
+                initialState={{
+                  pagination: {
+                    paginationModel: { page: 0, pageSize: 15 },
                   },
-                },
-                "& .MuiDataGrid-row:nth-of-type(even)": {
-                  backgroundColor: "#f4f8f7",
-                },
-                "& .MuiDataGrid-row:hover": {
-                  backgroundColor: "#d7a13b20",
-                },
-                "& .MuiDataGrid-footerContainer": {
-                  borderTop: "1px solid #265b4e",
-                },
-              }}
-            />
+                }}
+                pageSizeOptions={[10, 15, 20]}
+                checkboxSelection={false}
+                disableRowSelectionOnClick
+                sx={{
+                  border: 1,
+                  borderColor: "#265b4e",
+                  color: "black",
+                  "& .MuiDataGrid-cell": {
+                    padding: "8px",
+                  },
+                  "& .MuiDataGrid-columnHeaders": {
+                    backgroundColor: "#f4f8f7",
+                    "& .MuiDataGrid-columnHeaderTitle": {
+                      color: "#285e50",
+                      fontWeight: "bold",
+                    },
+                  },
+                  "& .MuiDataGrid-row:nth-of-type(even)": {
+                    backgroundColor: "#f4f8f7",
+                  },
+                  "& .MuiDataGrid-row:hover": {
+                    backgroundColor: "#d7a13b20",
+                  },
+                  "& .MuiDataGrid-footerContainer": {
+                    borderTop: "1px solid #265b4e",
+                  },
+                }}
+              />
+              {!isLoading && filteredAdvocates.length === 0 && (
+                <div className={styles.emptyState}>
+                  <p>No advocates found matching "{searchInput}"</p>
+                  <button
+                    className={styles.resetButton}
+                    onClick={onClick}
+                    aria-label="Clear search and show all advocates"
+                  >
+                    Clear Search
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
